@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import MultiStepLR
 import numpy as np
 import random
+from tqdm import tqdm
 
 from model import CLIPVAD
 from ucf_test import test
@@ -51,7 +52,7 @@ def train(model, normal_loader, anomaly_loader, testloader, args, label_map, dev
     epoch = 0
 
     if args.use_checkpoint == True:
-        checkpoint = torch.load(args.checkpoint_path)
+        checkpoint = torch.load(args.checkpoint_path, weights_only=True)
         model.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         epoch = checkpoint['epoch']
@@ -59,7 +60,7 @@ def train(model, normal_loader, anomaly_loader, testloader, args, label_map, dev
         print("checkpoint info:")
         print("epoch:", epoch+1, " ap:", ap_best)
 
-    for e in range(args.max_epoch):
+    for e in tqdm(range(args.max_epoch)):
         model.train()
         loss_total1 = 0
         loss_total2 = 0
@@ -113,10 +114,10 @@ def train(model, normal_loader, anomaly_loader, testloader, args, label_map, dev
         scheduler.step()
         
         torch.save(model.state_dict(), 'model/model_cur.pth')
-        checkpoint = torch.load(args.checkpoint_path)
-        model.load_state_dict(checkpoint['model_state_dict'])
+        # checkpoint = torch.load(args.checkpoint_path, weights_only=True)
+        # model.load_state_dict(checkpoint['model_state_dict'])
 
-    checkpoint = torch.load(args.checkpoint_path)
+    checkpoint = torch.load(args.checkpoint_path, weights_only=False)
     torch.save(checkpoint['model_state_dict'], args.model_path)
 
 def setup_seed(seed):
