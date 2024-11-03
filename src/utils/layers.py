@@ -8,6 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from scipy.spatial.distance import pdist, squareform
 
+
 class GraphAttentionLayer(nn.Module):
     """
     Simple GAT layer, similar to https://arxiv.org/abs/1710.10903
@@ -21,8 +22,12 @@ class GraphAttentionLayer(nn.Module):
         self.alpha = alpha
         self.concat = concat
 
-        self.W = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(in_features, out_features).type(torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
-        self.a = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(2*out_features, 1).type(torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
+        self.W = nn.Parameter(nn.init.xavier_uniform(
+            torch.Tensor(in_features, out_features).type(torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor),
+            gain=np.sqrt(2.0)), requires_grad=True)
+        self.a = nn.Parameter(
+            nn.init.xavier_uniform(torch.Tensor(2 * out_features, 1).type(torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor),
+                                   gain=np.sqrt(2.0)), requires_grad=True)
 
         self.leakyrelu = nn.LeakyReLU(self.alpha)
 
@@ -33,7 +38,7 @@ class GraphAttentionLayer(nn.Module):
         a_input = torch.cat([h.repeat(1, N).view(N * N, -1), h.repeat(N, 1)], dim=1).view(N, -1, 2 * self.out_features)
         e = self.leakyrelu(torch.matmul(a_input, self.a).squeeze(2))
 
-        zero_vec = -9e15*torch.ones_like(e)
+        zero_vec = -9e15 * torch.ones_like(e)
         attention = torch.where(adj > 0, e, zero_vec)
         attention = F.softmax(attention, dim=1)
         attention = F.dropout(attention, self.dropout, training=self.training)
@@ -47,6 +52,7 @@ class GraphAttentionLayer(nn.Module):
     def __repr__(self):
         return self.__class__.__name__ + ' (' + str(self.in_features) + ' -> ' + str(self.out_features) + ')'
 
+
 class linear(nn.Module):
     def __init__(self, in_features, out_features):
         super(linear, self).__init__()
@@ -54,9 +60,11 @@ class linear(nn.Module):
         self.register_parameter('bias', None)
         stdv = 1. / sqrt(self.weight.size(1))
         self.weight.data.uniform_(-stdv, stdv)
+
     def forward(self, x):
         x = x.matmul(self.weight)
         return x
+
 
 class GraphConvolution(Module):
     """
@@ -80,6 +88,7 @@ class GraphConvolution(Module):
         else:
             # self.residual = linear(in_features, out_features)
             self.residual = nn.Conv1d(in_channels=in_features, out_channels=out_features, kernel_size=5, padding=2)
+
     def reset_parameters(self):
         # stdv = 1. / sqrt(self.weight.size(1))
         nn.init.xavier_uniform_(self.weight)
@@ -94,9 +103,9 @@ class GraphConvolution(Module):
         if self.bias is not None:
             output = output + self.bias
         if self.in_features != self.out_features and self.residual:
-            input = input.permute(0,2,1)
+            input = input.permute(0, 2, 1)
             res = self.residual(input)
-            res = res.permute(0,2,1)
+            res = res.permute(0, 2, 1)
             output = output + res
         else:
             output = output + self.residual(input)
@@ -105,8 +114,9 @@ class GraphConvolution(Module):
 
     def __repr__(self):
         return self.__class__.__name__ + ' (' \
-               + str(self.in_features) + ' -> ' \
-               + str(self.out_features) + ')'
+            + str(self.in_features) + ' -> ' \
+            + str(self.out_features) + ')'
+
 
 ######################################################
 
@@ -159,8 +169,9 @@ class SimilarityAdj(Module):
 
     def __repr__(self):
         return self.__class__.__name__ + ' (' \
-               + str(self.in_features) + ' -> ' \
-               + str(self.out_features) + ')'
+            + str(self.in_features) + ' -> ' \
+            + str(self.out_features) + ')'
+
 
 class DistanceAdj(Module):
 
@@ -177,7 +188,8 @@ class DistanceAdj(Module):
         self.dist = torch.exp(-self.dist / torch.exp(torch.tensor(1.)))
         self.dist = torch.unsqueeze(self.dist, 0).repeat(batch_size, 1, 1).to('cuda')
         return self.dist
-    
+
+
 if __name__ == '__main__':
     d = DistanceAdj()
     dist = d(1, 256).squeeze(0)

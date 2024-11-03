@@ -7,6 +7,7 @@ from torch import nn
 from clip import clip
 from utils.layers import GraphConvolution, DistanceAdj
 
+
 class LayerNorm(nn.LayerNorm):
 
     def forward(self, x: torch.Tensor):
@@ -136,10 +137,10 @@ class CLIPVAD(nn.Module):
 
     def adj4(self, x, seq_len):
         soft = nn.Softmax(1)
-        x2 = x.matmul(x.permute(0, 2, 1)) # B*T*T
+        x2 = x.matmul(x.permute(0, 2, 1))  # B*T*T
         x_norm = torch.norm(x, p=2, dim=2, keepdim=True)  # B*T*1
         x_norm_x = x_norm.matmul(x_norm.permute(0, 2, 1))
-        x2 = x2/(x_norm_x+1e-20)
+        x2 = x2 / (x_norm_x + 1e-20)
         output = torch.zeros_like(x2)
         if seq_len is None:
             for i in range(x.shape[0]):
@@ -221,4 +222,3 @@ class CLIPVAD(nn.Module):
         logits2 = visual_features_norm @ text_features_norm.type(visual_features_norm.dtype) / 0.07
 
         return text_features_ori, logits1, logits2
-    

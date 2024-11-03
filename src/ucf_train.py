@@ -6,12 +6,12 @@ from torch.optim.lr_scheduler import MultiStepLR
 import numpy as np
 import random
 from tqdm import tqdm
-
 from model import CLIPVAD
 from ucf_test import test
 from utils.dataset import UCFDataset
 from utils.tools import get_prompt_text, get_batch_label
 import ucf_option
+
 
 def CLASM(logits, labels, lengths, device):
     instance_logits = torch.zeros(0).to(device)
@@ -24,6 +24,7 @@ def CLASM(logits, labels, lengths, device):
 
     milloss = -torch.mean(torch.sum(labels * F.log_softmax(instance_logits, dim=1), dim=1), dim=0)
     return milloss
+
 
 def CLAS2(logits, labels, lengths, device):
     instance_logits = torch.zeros(0).to(device)
@@ -39,6 +40,7 @@ def CLAS2(logits, labels, lengths, device):
     clsloss = F.binary_cross_entropy(instance_logits, labels)
     return clsloss
 
+
 def train(model, normal_loader, anomaly_loader, testloader, args, label_map, device):
     model.to(device)
     gt = np.load(args.gt_path)
@@ -51,14 +53,14 @@ def train(model, normal_loader, anomaly_loader, testloader, args, label_map, dev
     ap_best = 0
     epoch = 0
 
-    if args.use_checkpoint == True:
+    if args.use_checkpoint:
         checkpoint = torch.load(args.checkpoint_path, weights_only=True)
         model.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         epoch = checkpoint['epoch']
         ap_best = checkpoint['ap']
         print("checkpoint info:")
-        print("epoch:", epoch+1, " ap:", ap_best)
+        print("epoch:", epoch + 1, " ap:", ap_best)
 
     for e in tqdm(range(args.max_epoch)):
         model.train()
@@ -76,14 +78,14 @@ def train(model, normal_loader, anomaly_loader, testloader, args, label_map, dev
             feat_lengths = torch.cat([normal_lengths, anomaly_lengths], dim=0).to(device)
             text_labels = get_batch_label(text_labels, prompt_text, label_map).to(device)
 
-            text_features, logits1, logits2 = model(visual_features, None, prompt_text, feat_lengths) 
-            #loss1
-            loss1 = CLAS2(logits1, text_labels, feat_lengths, device) 
+            text_features, logits1, logits2 = model(visual_features, None, prompt_text, feat_lengths)
+            # loss1
+            loss1 = CLAS2(logits1, text_labels, feat_lengths, device)
             loss_total1 += loss1.item()
-            #loss2
+            # loss2
             loss2 = CLASM(logits2, text_labels, feat_lengths, device)
             loss_total2 += loss2.item()
-            #loss3
+            # loss3
             loss3 = torch.zeros(1).to(device)
             text_feature_normal = text_features[0] / text_features[0].norm(dim=-1, keepdim=True)
             for j in range(1, text_features.shape[0]):
@@ -98,21 +100,22 @@ def train(model, normal_loader, anomaly_loader, testloader, args, label_map, dev
             optimizer.step()
             step += i * normal_loader.batch_size * 2
             if step % 1280 == 0 and step != 0:
-                print('epoch: ', e+1, '| step: ', step, '| loss1: ', loss_total1 / (i+1), '| loss2: ', loss_total2 / (i+1), '| loss3: ', loss3.item())
+                print('epoch: ', e + 1, '| step: ', step, '| loss1: ', loss_total1 / (i + 1), '| loss2: ', loss_total2 / (i + 1), '| loss3: ',
+                      loss3.item())
                 AUC, AP = test(model, testloader, args.visual_length, prompt_text, gt, gtsegments, gtlabels, device)
                 AP = AUC
 
                 if AP > ap_best:
-                    ap_best = AP 
+                    ap_best = AP
                     checkpoint = {
                         'epoch': e,
                         'model_state_dict': model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict(),
                         'ap': ap_best}
                     torch.save(checkpoint, args.checkpoint_path)
-                
+
         scheduler.step()
-        
+
         torch.save(model.state_dict(), 'model/model_cur.pth')
         # checkpoint = torch.load(args.checkpoint_path, weights_only=True)
         # model.load_state_dict(checkpoint['model_state_dict'])
@@ -120,19 +123,23 @@ def train(model, normal_loader, anomaly_loader, testloader, args, label_map, dev
     checkpoint = torch.load(args.checkpoint_path, weights_only=False)
     torch.save(checkpoint['model_state_dict'], args.model_path)
 
+
 def setup_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
     random.seed(seed)
-    #torch.backends.cudnn.deterministic = True
+    # torch.backends.cudnn.deterministic = True
+
 
 if __name__ == '__main__':
     device = "cuda" if torch.cuda.is_available() else "cpu"
     args = ucf_option.parser.parse_args()
     setup_seed(args.seed)
 
-    label_map = dict({'Normal': 'normal', 'Abuse': 'abuse', 'Arrest': 'arrest', 'Arson': 'arson', 'Assault': 'assault', 'Burglary': 'burglary', 'Explosion': 'explosion', 'Fighting': 'fighting', 'RoadAccidents': 'roadAccidents', 'Robbery': 'robbery', 'Shooting': 'shooting', 'Shoplifting': 'shoplifting', 'Stealing': 'stealing', 'Vandalism': 'vandalism'})
+    label_map = dict({'Normal': 'normal', 'Abuse': 'abuse', 'Arrest': 'arrest', 'Arson': 'arson', 'Assault': 'assault', 'Burglary': 'burglary',
+                      'Explosion': 'explosion', 'Fighting': 'fighting', 'RoadAccidents': 'roadAccidents', 'Robbery': 'robbery',
+                      'Shooting': 'shooting', 'Shoplifting': 'shoplifting', 'Stealing': 'stealing', 'Vandalism': 'vandalism'})
 
     normal_dataset = UCFDataset(args.visual_length, args.train_list, False, label_map, True)
     normal_loader = DataLoader(normal_dataset, batch_size=args.batch_size, shuffle=True, drop_last=True)
@@ -142,6 +149,7 @@ if __name__ == '__main__':
     test_dataset = UCFDataset(args.visual_length, args.test_list, True, label_map)
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
-    model = CLIPVAD(args.classes_num, args.embed_dim, args.visual_length, args.visual_width, args.visual_head, args.visual_layers, args.attn_window, args.prompt_prefix, args.prompt_postfix, device)
+    model = CLIPVAD(args.classes_num, args.embed_dim, args.visual_length, args.visual_width, args.visual_head, args.visual_layers, args.attn_window,
+                    args.prompt_prefix, args.prompt_postfix, device)
 
     train(model, normal_loader, anomaly_loader, test_loader, args, label_map, device)

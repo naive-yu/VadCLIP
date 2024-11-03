@@ -12,6 +12,7 @@ from utils.dataset import XDDataset
 from utils.tools import get_prompt_text, get_batch_label
 import xd_option
 
+
 def CLASM(logits, labels, lengths, device):
     instance_logits = torch.zeros(0).to(device)
     labels = labels / torch.sum(labels, dim=1, keepdim=True)
@@ -23,6 +24,7 @@ def CLASM(logits, labels, lengths, device):
 
     milloss = -torch.mean(torch.sum(labels * F.log_softmax(instance_logits, dim=1), dim=1), dim=0)
     return milloss
+
 
 def CLAS2(logits, labels, lengths, device):
     instance_logits = torch.zeros(0).to(device)
@@ -38,6 +40,7 @@ def CLAS2(logits, labels, lengths, device):
     clsloss = F.binary_cross_entropy(instance_logits, labels)
     return clsloss
 
+
 def train(model, train_loader, test_loader, args, label_map: dict, device):
     model.to(device)
 
@@ -51,14 +54,14 @@ def train(model, train_loader, test_loader, args, label_map: dict, device):
     ap_best = 0
     epoch = 0
 
-    if args.use_checkpoint == True:
+    if args.use_checkpoint:
         checkpoint = torch.load(args.checkpoint_path)
         model.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         epoch = checkpoint['epoch']
         ap_best = checkpoint['ap']
         print("checkpoint info:")
-        print("epoch:", epoch+1, " ap:", ap_best)
+        print("epoch:", epoch + 1, " ap:", ap_best)
 
     for e in range(args.max_epoch):
         model.train()
@@ -71,9 +74,9 @@ def train(model, train_loader, test_loader, args, label_map: dict, device):
             feat_lengths = feat_lengths.to(device)
             text_labels = get_batch_label(text_labels, prompt_text, label_map).to(device)
 
-            text_features, logits1, logits2 = model(visual_feat, None, prompt_text, feat_lengths) 
+            text_features, logits1, logits2 = model(visual_feat, None, prompt_text, feat_lengths)
 
-            loss1 = CLAS2(logits1, text_labels, feat_lengths, device) 
+            loss1 = CLAS2(logits1, text_labels, feat_lengths, device)
             loss_total1 += loss1.item()
 
             loss2 = CLASM(logits2, text_labels, feat_lengths, device)
@@ -93,13 +96,14 @@ def train(model, train_loader, test_loader, args, label_map: dict, device):
             optimizer.step()
             step += i * train_loader.batch_size
             if step % 4800 == 0 and step != 0:
-                print('epoch: ', e+1, '| step: ', step, '| loss1: ', loss_total1 / (i+1), '| loss2: ', loss_total2 / (i+1), '| loss3: ', loss3.item())
-                
+                print('epoch: ', e + 1, '| step: ', step, '| loss1: ', loss_total1 / (i + 1), '| loss2: ', loss_total2 / (i + 1), '| loss3: ',
+                      loss3.item())
+
         scheduler.step()
         AUC, AP, mAP = test(model, test_loader, args.visual_length, prompt_text, gt, gtsegments, gtlabels, device)
 
         if AP > ap_best:
-            ap_best = AP 
+            ap_best = AP
             checkpoint = {
                 'epoch': e,
                 'model_state_dict': model.state_dict(),
@@ -113,12 +117,14 @@ def train(model, train_loader, test_loader, args, label_map: dict, device):
     checkpoint = torch.load(args.checkpoint_path)
     torch.save(checkpoint['model_state_dict'], args.model_path)
 
+
 def setup_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
     random.seed(seed)
-    #torch.backends.cudnn.deterministic = True
+    # torch.backends.cudnn.deterministic = True
+
 
 if __name__ == '__main__':
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -133,5 +139,6 @@ if __name__ == '__main__':
     test_dataset = XDDataset(args.visual_length, args.test_list, True, label_map)
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
-    model = CLIPVAD(args.classes_num, args.embed_dim, args.visual_length, args.visual_width, args.visual_head, args.visual_layers, args.attn_window, args.prompt_prefix, args.prompt_postfix, device)
+    model = CLIPVAD(args.classes_num, args.embed_dim, args.visual_length, args.visual_width, args.visual_head, args.visual_layers, args.attn_window,
+                    args.prompt_prefix, args.prompt_postfix, device)
     train(model, train_loader, test_loader, args, label_map, device)

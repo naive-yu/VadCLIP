@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 
+
 def get_batch_label(texts, prompt_text, label_map: dict):
     label_vectors = torch.zeros(0)
     if len(label_map) != 7:
@@ -30,11 +31,12 @@ def get_batch_label(texts, prompt_text, label_map: dict):
                 if label in label_map:
                     label_text = label_map[label]
                     label_vector[prompt_text.index(label_text)] = 1
-            
+
             label_vector = label_vector.unsqueeze(0)
             label_vectors = torch.cat([label_vectors, label_vector], dim=0)
 
     return label_vectors
+
 
 def get_prompt_text(label_map: dict):
     prompt_text = []
@@ -43,6 +45,7 @@ def get_prompt_text(label_map: dict):
 
     return prompt_text
 
+
 def get_batch_mask(lengths, maxlen):
     batch_size = lengths.shape[0]
     mask = torch.empty(batch_size, maxlen)
@@ -50,34 +53,38 @@ def get_batch_mask(lengths, maxlen):
     for i in range(batch_size):
         if lengths[i] < maxlen:
             mask[i, lengths[i]:maxlen] = 1
-    
+
     return mask.bool()
 
+
 def random_extract(feat, t_max):
-   r = np.random.randint(feat.shape[0] - t_max)
-   return feat[r : r+t_max, :]
+    r = np.random.randint(feat.shape[0] - t_max)
+    return feat[r: r + t_max, :]
+
 
 def uniform_extract(feat, t_max, avg: bool = True):
     new_feat = np.zeros((t_max, feat.shape[1])).astype(np.float32)
-    r = np.linspace(0, len(feat), t_max+1, dtype=np.int32)
-    if avg == True:
+    r = np.linspace(0, len(feat), t_max + 1, dtype=np.int32)
+    if avg:
         for i in range(t_max):
-            if r[i]!=r[i+1]:
-                new_feat[i,:] = np.mean(feat[r[i]:r[i+1],:], 0)
+            if r[i] != r[i + 1]:
+                new_feat[i, :] = np.mean(feat[r[i]:r[i + 1], :], 0)
             else:
-                new_feat[i,:] = feat[r[i],:]
+                new_feat[i, :] = feat[r[i], :]
     else:
-        r = np.linspace(0, feat.shape[0]-1, t_max, dtype=np.uint16)
+        r = np.linspace(0, feat.shape[0] - 1, t_max, dtype=np.uint16)
         new_feat = feat[r, :]
-            
+
     return new_feat
+
 
 def pad(feat, min_len):
     clip_length = feat.shape[0]
     if clip_length <= min_len:
-       return np.pad(feat, ((0, min_len - clip_length), (0, 0)), mode='constant', constant_values=0)
+        return np.pad(feat, ((0, min_len - clip_length), (0, 0)), mode='constant', constant_values=0)
     else:
-       return feat
+        return feat
+
 
 def process_feat(feat, length, is_random=False):
     clip_length = feat.shape[0]
@@ -89,6 +96,7 @@ def process_feat(feat, length, is_random=False):
     else:
         return pad(feat, length), clip_length
 
+
 def process_split(feat, length):
     clip_length = feat.shape[0]
     if clip_length < length:
@@ -97,10 +105,11 @@ def process_split(feat, length):
         split_num = int(clip_length / length) + 1
         for i in range(split_num):
             if i == 0:
-                split_feat = feat[i*length:i*length+length, :].reshape(1, length, feat.shape[1])
+                split_feat = feat[i * length:i * length + length, :].reshape(1, length, feat.shape[1])
             elif i < split_num - 1:
-                split_feat = np.concatenate([split_feat, feat[i*length:i*length+length, :].reshape(1, length, feat.shape[1])], axis=0)
+                split_feat = np.concatenate([split_feat, feat[i * length:i * length + length, :].reshape(1, length, feat.shape[1])], axis=0)
             else:
-                split_feat = np.concatenate([split_feat, pad(feat[i*length:i*length+length, :], length).reshape(1, length, feat.shape[1])], axis=0)
+                split_feat = np.concatenate([split_feat, pad(feat[i * length:i * length + length, :], length).reshape(1, length, feat.shape[1])],
+                                            axis=0)
 
         return split_feat, clip_length

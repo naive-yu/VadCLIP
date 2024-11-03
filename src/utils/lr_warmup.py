@@ -1,6 +1,7 @@
 import math
 from torch.optim.lr_scheduler import MultiStepLR, _LRScheduler
 
+
 class WarmupMultiStepLR(MultiStepLR):
     r"""
     # max_iter = epochs * steps_per_epoch
@@ -15,8 +16,9 @@ class WarmupMultiStepLR(MultiStepLR):
         warmup_factor (float):         
         last_epoch (int): The index of last epoch. Default: -1.
     """
+
     def __init__(self, optimizer, max_iter, milestones, gamma=0.1, pct_start=0.3, warmup_factor=1.0 / 2,
-                  last_epoch=-1):
+                 last_epoch=-1):
         self.warmup_factor = warmup_factor
         self.warmup_iters = int(pct_start * max_iter)
         super().__init__(optimizer, milestones, gamma, last_epoch)
@@ -30,8 +32,9 @@ class WarmupMultiStepLR(MultiStepLR):
             lr = super().get_lr()
         return lr
 
+
 class WarmupCosineLR(_LRScheduler):
-    def __init__(self, optimizer, max_iter, pct_start=0.3, warmup_factor=1.0 / 3, 
+    def __init__(self, optimizer, max_iter, pct_start=0.3, warmup_factor=1.0 / 3,
                  eta_min=0, last_epoch=-1):
         self.warmup_factor = warmup_factor
         self.warmup_iters = int(pct_start * max_iter)
@@ -50,8 +53,9 @@ class WarmupCosineLR(_LRScheduler):
                         math.pi * (self.last_epoch - self.warmup_iters) / (self.max_iter - self.warmup_iters))) / 2
                     for base_lr in self.base_lrs]
 
+
 class WarmupPolyLR(_LRScheduler):
-    def __init__(self, optimizer, T_max, pct_start=0.3, warmup_factor=1.0 / 4, 
+    def __init__(self, optimizer, T_max, pct_start=0.3, warmup_factor=1.0 / 4,
                  eta_min=0, power=0.9):
         self.warmup_factor = warmup_factor
         self.warmup_iters = int(pct_start * T_max)

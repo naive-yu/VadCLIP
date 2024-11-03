@@ -11,8 +11,8 @@ from utils.tools import get_batch_mask, get_prompt_text
 from utils.xd_detectionMAP import getDetectionMAP as dmAP
 import xd_option
 
+
 def test(model, testdataloader, maxlen, prompt_text, gt, gtsegments, gtlabels, device):
-    
     model.to(device)
     model.eval()
 
@@ -79,10 +79,10 @@ def test(model, testdataloader, maxlen, prompt_text, gt, gtsegments, gtlabels, d
     for i in range(5):
         print('mAP@{0:.1f} ={1:.2f}%'.format(iou[i], dmap[i]))
         averageMAP += dmap[i]
-    averageMAP = averageMAP/(i+1)
+    averageMAP = averageMAP / (i + 1)
     print('average MAP: {:.2f}'.format(averageMAP))
 
-    return ROC1, AP2 ,0#, averageMAP
+    return ROC1, AP2, 0  # , averageMAP
 
 
 if __name__ == '__main__':
@@ -99,7 +99,8 @@ if __name__ == '__main__':
     gtsegments = np.load(args.gt_segment_path, allow_pickle=True)
     gtlabels = np.load(args.gt_label_path, allow_pickle=True)
 
-    model = CLIPVAD(args.classes_num, args.embed_dim, args.visual_length, args.visual_width, args.visual_head, args.visual_layers, args.attn_window, args.prompt_prefix, args.prompt_postfix, device)
+    model = CLIPVAD(args.classes_num, args.embed_dim, args.visual_length, args.visual_width, args.visual_head, args.visual_layers, args.attn_window,
+                    args.prompt_prefix, args.prompt_postfix, device)
     model_param = torch.load(args.model_path)
     model.load_state_dict(model_param)
 

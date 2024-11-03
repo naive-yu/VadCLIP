@@ -11,8 +11,8 @@ from utils.tools import get_batch_mask, get_prompt_text
 from utils.ucf_detectionMAP import getDetectionMAP as dmAP
 import ucf_option
 
+
 def test(model, testdataloader, maxlen, prompt_text, gt, gtsegments, gtlabels, device):
-    
     model.to(device)
     model.eval()
 
@@ -53,7 +53,7 @@ def test(model, testdataloader, maxlen, prompt_text, gt, gtsegments, gtlabels, d
             if i == 0:
                 ap1 = prob1
                 ap2 = prob2
-                #ap3 = prob3
+                # ap3 = prob3
             else:
                 ap1 = torch.cat([ap1, prob1], dim=0)
                 ap2 = torch.cat([ap2, prob2], dim=0)
@@ -80,7 +80,7 @@ def test(model, testdataloader, maxlen, prompt_text, gt, gtsegments, gtlabels, d
     for i in range(5):
         print('mAP@{0:.1f} ={1:.2f}%'.format(iou[i], dmap[i]))
         averageMAP += dmap[i]
-    averageMAP = averageMAP/(i+1)
+    averageMAP = averageMAP / (i + 1)
     print('average MAP: {:.2f}'.format(averageMAP))
 
     return ROC1, AP1
@@ -90,7 +90,9 @@ if __name__ == '__main__':
     device = "cuda" if torch.cuda.is_available() else "cpu"
     args = ucf_option.parser.parse_args()
 
-    label_map = dict({'Normal': 'Normal', 'Abuse': 'Abuse', 'Arrest': 'Arrest', 'Arson': 'Arson', 'Assault': 'Assault', 'Burglary': 'Burglary', 'Explosion': 'Explosion', 'Fighting': 'Fighting', 'RoadAccidents': 'RoadAccidents', 'Robbery': 'Robbery', 'Shooting': 'Shooting', 'Shoplifting': 'Shoplifting', 'Stealing': 'Stealing', 'Vandalism': 'Vandalism'})
+    label_map = dict({'Normal': 'Normal', 'Abuse': 'Abuse', 'Arrest': 'Arrest', 'Arson': 'Arson', 'Assault': 'Assault', 'Burglary': 'Burglary',
+                      'Explosion': 'Explosion', 'Fighting': 'Fighting', 'RoadAccidents': 'RoadAccidents', 'Robbery': 'Robbery',
+                      'Shooting': 'Shooting', 'Shoplifting': 'Shoplifting', 'Stealing': 'Stealing', 'Vandalism': 'Vandalism'})
 
     testdataset = UCFDataset(args.visual_length, args.test_list, True, label_map)
     testdataloader = DataLoader(testdataset, batch_size=1, shuffle=False)
@@ -100,7 +102,8 @@ if __name__ == '__main__':
     gtsegments = np.load(args.gt_segment_path, allow_pickle=True)
     gtlabels = np.load(args.gt_label_path, allow_pickle=True)
 
-    model = CLIPVAD(args.classes_num, args.embed_dim, args.visual_length, args.visual_width, args.visual_head, args.visual_layers, args.attn_window, args.prompt_prefix, args.prompt_postfix, device)
+    model = CLIPVAD(args.classes_num, args.embed_dim, args.visual_length, args.visual_width, args.visual_head, args.visual_layers, args.attn_window,
+                    args.prompt_prefix, args.prompt_postfix, device)
     model_param = torch.load(args.model_path, weights_only=False)
     model.load_state_dict(model_param)
 
