@@ -126,14 +126,14 @@ class CLIPVAD(nn.Module):
         # lazily create causal attention mask, with full attention between the vision tokens
         # pytorch uses additive attention mask; fill with -inf
         mask = torch.empty(self.visual_length, self.visual_length)
-        mask.fill_(float('-inf'))
+        mask.fill_(1)
         for i in range(int(self.visual_length / attn_window)):
             if (i + 1) * attn_window < self.visual_length:
                 mask[i * attn_window: (i + 1) * attn_window, i * attn_window: (i + 1) * attn_window] = 0
             else:
                 mask[i * attn_window: self.visual_length, i * attn_window: self.visual_length] = 0
 
-        return mask
+        return mask.bool()
 
     def adj4(self, x, seq_len):
         soft = nn.Softmax(1)
@@ -150,7 +150,7 @@ class CLIPVAD(nn.Module):
                 adj2 = soft(adj2)
                 output[i] = adj2
         else:
-            for i in range(len(seq_len)):
+            for i in range(len(seq_len)):  # 对每一个批次处理（每一个视频的长度不一致，有效帧数就不同）
                 tmp = x2[i, :seq_len[i], :seq_len[i]]
                 adj2 = tmp
                 adj2 = F.threshold(adj2, 0.7, 0)
@@ -167,7 +167,7 @@ class CLIPVAD(nn.Module):
         frame_position_embeddings = frame_position_embeddings.permute(1, 0, 2)
         images = images.permute(1, 0, 2) + frame_position_embeddings
 
-        x, _ = self.temporal((images, None))
+        x, _ = self.temporal((images, padding_mask))
         x = x.permute(1, 0, 2)
 
         adj = self.adj4(x, lengths)
@@ -183,13 +183,13 @@ class CLIPVAD(nn.Module):
 
         return x
 
-    def encode_textprompt(self, text):
+    def encode_textprompt(self, text):  # @ 2024/11/07
         word_tokens = clip.tokenize(text).to(self.device)
         word_embedding = self.clipmodel.encode_token(word_tokens)
         text_embeddings = self.text_prompt_embeddings(torch.arange(77).to(self.device)).unsqueeze(0).repeat([len(text), 1, 1])
         text_tokens = torch.zeros(len(text), 77).to(self.device)
 
-        for i in range(len(text)):
+        for i in range(len(text)):  # 依次处理每条文本
             ind = torch.argmax(word_tokens[i], -1)
             text_embeddings[i, 0] = word_embedding[i, 0]
             text_embeddings[i, self.prompt_prefix + 1: self.prompt_prefix + ind] = word_embedding[i, 1: ind]

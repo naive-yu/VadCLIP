@@ -133,14 +133,14 @@ def setup_seed(seed):
 
 
 if __name__ == '__main__':
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    args = ucf_option.parser.parse_args()
-    setup_seed(args.seed)
-
+    device = "cuda" if torch.cuda.is_available() else "cpu"  # 使用GPU
+    args = ucf_option.parser.parse_args()  # 从ucfoption.py文件获取配置
+    setup_seed(args.seed)  # 设置随机数234
+    # 14类异常情况
     label_map = dict({'Normal': 'normal', 'Abuse': 'abuse', 'Arrest': 'arrest', 'Arson': 'arson', 'Assault': 'assault', 'Burglary': 'burglary',
                       'Explosion': 'explosion', 'Fighting': 'fighting', 'RoadAccidents': 'roadAccidents', 'Robbery': 'robbery',
                       'Shooting': 'shooting', 'Shoplifting': 'shoplifting', 'Stealing': 'stealing', 'Vandalism': 'vandalism'})
-
+    # visual_length即clip_dim
     normal_dataset = UCFDataset(args.visual_length, args.train_list, False, label_map, True)
     normal_loader = DataLoader(normal_dataset, batch_size=args.batch_size, shuffle=True, drop_last=True)
     anomaly_dataset = UCFDataset(args.visual_length, args.train_list, False, label_map, False)
@@ -148,7 +148,7 @@ if __name__ == '__main__':
 
     test_dataset = UCFDataset(args.visual_length, args.test_list, True, label_map)
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
-
+    # 导入CLIPVAD模型开始训练
     model = CLIPVAD(args.classes_num, args.embed_dim, args.visual_length, args.visual_width, args.visual_head, args.visual_layers, args.attn_window,
                     args.prompt_prefix, args.prompt_postfix, device)
 

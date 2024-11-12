@@ -14,7 +14,7 @@ def get_batch_label(texts, prompt_text, label_map: dict):
                     label_vector[1] = 1
                 label_vector = label_vector.unsqueeze(0)
                 label_vectors = torch.cat([label_vectors, label_vector], dim=0)
-        else:
+        else:  # 14 one hot 编码 细粒度分类
             for text in texts:
                 label_vector = torch.zeros(len(prompt_text))
                 if text in label_map:
