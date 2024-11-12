@@ -62,7 +62,7 @@ def random_extract(feat, t_max):
     return feat[r: r + t_max, :]
 
 
-def uniform_extract(feat, t_max, avg: bool = True):
+def uniform_extract(feat, t_max, avg: bool = False):
     new_feat = np.zeros((t_max, feat.shape[1])).astype(np.float32)
     r = np.linspace(0, len(feat), t_max + 1, dtype=np.int32)
     if avg:
