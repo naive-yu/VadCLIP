@@ -117,9 +117,9 @@ def train(model, normal_loader, anomaly_loader, testloader, args, label_map, dev
 
         scheduler.step()
 
-        torch.save(model.state_dict(), 'model/model_cur.pth')
-        # checkpoint = torch.load(args.checkpoint_path, weights_only=True)
-        # model.load_state_dict(checkpoint['model_state_dict'])
+        torch.save(model.state_dict(), '../model/model_cur.pth')
+        checkpoint = torch.load(args.checkpoint_path, weights_only=True)
+        model.load_state_dict(checkpoint['model_state_dict'])
 
     checkpoint = torch.load(args.checkpoint_path, weights_only=False)
     torch.save(checkpoint['model_state_dict'], args.model_path)
