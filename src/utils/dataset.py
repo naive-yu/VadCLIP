@@ -15,7 +15,6 @@ class UCFDataset(data.Dataset):
         if normal is True and test_mode is False:
             self.df = self.df.loc[self.df['label'] == 'Normal']
             self.df = self.df.reset_index()
-            pass
         elif not test_mode:
             self.df = self.df.loc[self.df['label'] != 'Normal']
             self.df = self.df.reset_index()

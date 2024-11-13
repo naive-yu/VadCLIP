@@ -1,5 +1,4 @@
 import torch
-from torch import nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import MultiStepLR
@@ -37,7 +36,7 @@ def CLAS2(logits, labels, lengths, device):
         tmp = torch.mean(tmp).view(1)
         instance_logits = torch.cat([instance_logits, tmp], dim=0)
 
-    print(instance_logits)
+    # print(instance_logits)
     clsloss = F.binary_cross_entropy(instance_logits, labels)
     return clsloss
 

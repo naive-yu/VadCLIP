@@ -1,6 +1,4 @@
 import torch
-from torch import nn
-import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import numpy as np
 from sklearn.metrics import average_precision_score, roc_auc_score
@@ -72,8 +70,7 @@ def test(model, testdataloader, maxlen, prompt_text, gt, gtsegments, gtlabels, d
     ROC2 = roc_auc_score(gt, np.repeat(ap2, 16))
     AP2 = average_precision_score(gt, np.repeat(ap2, 16))
 
-    print("AUC1: ", ROC1, " AP1: ", AP1)
-    print("AUC2: ", ROC2, " AP2:", AP2)
+    print("AUC1: ", ROC1, " AP1: ", AP1, "AUC2: ", ROC2, " AP2:", AP2)
 
     dmap, iou = dmAP(element_logits2_stack, gtsegments, gtlabels, excludeNormal=False)
     averageMAP = 0
