@@ -9,7 +9,7 @@ from tqdm import tqdm
 from model import CLIPVAD
 from ucf_test import test
 from utils.dataset import UCFDataset
-from utils.tools import get_prompt_text, get_batch_label
+from utils.tools import get_prompt_text, get_batch_label, get_batch_mask
 import ucf_option
 
 
@@ -30,13 +30,14 @@ def CLAS2(logits, labels, lengths, device):
     instance_logits = torch.zeros(0).to(device)
     labels = 1 - labels[:, 0].reshape(labels.shape[0])
     labels = labels.to(device)
-    logits = torch.sigmoid(logits).reshape(logits.shape[0], logits.shape[1])
 
     for i in range(logits.shape[0]):
-        tmp, _ = torch.topk(logits[i, 0:lengths[i]], k=int(lengths[i] / 16 + 1), largest=True)
+        logit = torch.sigmoid(logits[i, 0:lengths[i]].reshape(lengths[i]))
+        tmp, _ = torch.topk(logit, k=min(lengths[i], int(lengths[i] / 16 + 1)), largest=True)
         tmp = torch.mean(tmp).view(1)
         instance_logits = torch.cat([instance_logits, tmp], dim=0)
 
+    print(instance_logits)
     clsloss = F.binary_cross_entropy(instance_logits, labels)
     return clsloss
 
@@ -78,7 +79,8 @@ def train(model, normal_loader, anomaly_loader, testloader, args, label_map, dev
             feat_lengths = torch.cat([normal_lengths, anomaly_lengths], dim=0).to(device)
             text_labels = get_batch_label(text_labels, prompt_text, label_map).to(device)
 
-            text_features, logits1, logits2 = model(visual_features, None, prompt_text, feat_lengths)
+            padding_mask = get_batch_mask(feat_lengths, args.visual_length).to(device)
+            text_features, logits1, logits2 = model(visual_features, padding_mask, prompt_text, feat_lengths)
             # loss1
             loss1 = CLAS2(logits1, text_labels, feat_lengths, device)
             loss_total1 += loss1.item()
