@@ -1,0 +1,111 @@
+  0%|          | 0/10 [00:00<?, ?it/s]epoch:  1 | step:  1280 | loss1:  0.7083314142443917 | loss2:  2.5125773386521773 | loss3:  0.09685434401035309
+AUC1:  0.779346201275782  AP1:  0.21262716460382258 AUC2:  0.4162647530754601  AP2: 0.0612306296916105
+mAP@0.1 =2.07%
+mAP@0.2 =1.88%
+mAP@0.3 =1.51%
+mAP@0.4 =1.32%
+mAP@0.5 =1.27%
+average MAP: 1.61
+epoch:  1 | step:  2560 | loss1:  0.5364350690728142 | loss2:  2.38679085459028 | loss3:  0.09487785398960114
+AUC1:  0.8108668594551469  AP1:  0.2361399435772277 AUC2:  0.6054830924981098  AP2: 0.10912496384860354
+mAP@0.1 =2.82%
+mAP@0.2 =2.57%
+mAP@0.3 =2.21%
+mAP@0.4 =1.96%
+mAP@0.5 =1.83%
+average MAP: 2.28
+epoch:  1 | step:  3840 | loss1:  0.45969284638281793 | loss2:  2.2520134102913643 | loss3:  0.09075348824262619
+AUC1:  0.8326618521047893  AP1:  0.2541582099968932 AUC2:  0.7844221583821478  AP2: 0.19815596129783694
+mAP@0.1 =3.95%
+mAP@0.2 =3.07%
+mAP@0.3 =2.72%
+mAP@0.4 =2.22%
+mAP@0.5 =1.84%
+average MAP: 2.76
+epoch:  1 | step:  5120 | loss1:  0.40779297635322664 | loss2:  2.1373175964122866 | loss3:  0.07833921164274216
+AUC1:  0.8389647065248258  AP1:  0.2562492838640487 AUC2:  0.7961382420017931  AP2: 0.18968036101268962
+mAP@0.1 =4.28%
+mAP@0.2 =3.17%
+mAP@0.3 =2.73%
+mAP@0.4 =2.22%
+mAP@0.5 =1.87%
+average MAP: 2.86
+epoch:  1 | step:  6400 | loss1:  0.3714552863555796 | loss2:  2.0364913683311614 | loss3:  0.05867062881588936
+AUC1:  0.8440829496508506  AP1:  0.26521047125039027 AUC2:  0.8035280854999085  AP2: 0.19473473669158692
+mAP@0.1 =4.91%
+mAP@0.2 =3.56%
+mAP@0.3 =2.50%
+mAP@0.4 =1.35%
+mAP@0.5 =0.99%
+average MAP: 2.66
+epoch:  1 | step:  7680 | loss1:  0.34876952747829626 | loss2:  1.9499783066452527 | loss3:  0.04368547350168228
+AUC1:  0.8436008302351474  AP1:  0.26740185175908315 AUC2:  0.8167462462087207  AP2: 0.20283034129386907
+mAP@0.1 =5.92%
+mAP@0.2 =4.94%
+mAP@0.3 =3.38%
+mAP@0.4 =1.90%
+mAP@0.5 =1.59%
+average MAP: 3.55
+epoch:  1 | step:  8960 | loss1:  0.3265409146396207 | loss2:  1.8751252150871385 | loss3:  0.03612637147307396
+AUC1:  0.8514217391751111  AP1:  0.26159797199365487 AUC2:  0.8239045996651385  AP2: 0.20819347598147595
+mAP@0.1 =6.82%
+mAP@0.2 =5.73%
+mAP@0.3 =3.91%
+mAP@0.4 =2.90%
+mAP@0.5 =2.69%
+average MAP: 4.41
+epoch:  1 | step:  10240 | loss1:  0.3091241886586319 | loss2:  1.8170423963923512 | loss3:  0.034375566989183426
+AUC1:  0.8579582253967639  AP1:  0.2624248415449282 AUC2:  0.8301493261223158  AP2: 0.213003869178042
+mAP@0.1 =5.82%
+mAP@0.2 =4.27%
+mAP@0.3 =3.37%
+mAP@0.4 =2.33%
+mAP@0.5 =2.01%
+average MAP: 3.56
+epoch:  1 | step:  11520 | loss1:  0.2943568093763603 | loss2:  1.7644596859648987 | loss3:  0.03125009313225746
+AUC1:  0.8626154238170983  AP1:  0.2753492935513722 AUC2:  0.840494260991611  AP2: 0.22314282943843614
+mAP@0.1 =6.93%
+mAP@0.2 =5.17%
+mAP@0.3 =3.85%
+mAP@0.4 =3.23%
+mAP@0.5 =2.19%
+average MAP: 4.28
+epoch:  1 | step:  12800 | loss1:  0.28245055350926845 | loss2:  1.7223763147203048 | loss3:  0.028310900554060936
+AUC1:  0.867340233495443  AP1:  0.2927243242397421 AUC2:  0.8439246773831754  AP2: 0.22865564118863374
+mAP@0.1 =8.03%
+mAP@0.2 =5.36%
+mAP@0.3 =4.51%
+mAP@0.4 =3.50%
+mAP@0.5 =2.75%
+average MAP: 4.83
+epoch:  1 | step:  14080 | loss1:  0.27222767458842684 | loss2:  1.683127492397755 | loss3:  0.029459873214364052
+AUC1:  0.8577427505963084  AP1:  0.31143382439771167 AUC2:  0.8437267680537192  AP2: 0.23991491118495287
+mAP@0.1 =6.96%
+mAP@0.2 =5.36%
+mAP@0.3 =4.02%
+mAP@0.4 =2.83%
+mAP@0.5 =1.54%
+average MAP: 4.14
+epoch:  1 | step:  15360 | loss1:  0.26713604190625434 | loss2:  1.6527021010059955 | loss3:  0.026589421555399895
+AUC1:  0.8586566173399524  AP1:  0.32295592744533413 AUC2:  0.8384402697660744  AP2: 0.2362823922274638
+mAP@0.1 =8.33%
+mAP@0.2 =6.01%
+mAP@0.3 =4.97%
+mAP@0.4 =3.95%
+mAP@0.5 =3.21%
+average MAP: 5.29
+  0%|          | 0/10 [11:07<?, ?it/s]
+Traceback (most recent call last):
+  File "/root/VadCLIP/src/ucf_train.py", line 156, in <module>
+    train(model, normal_loader, anomaly_loader, test_loader, args, label_map, device)
+  File "/root/VadCLIP/src/ucf_train.py", line 121, in train
+    checkpoint = torch.load(args.checkpoint_path, weights_only=True)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/torch/serialization.py", line 1359, in load
+    raise pickle.UnpicklingError(_get_wo_message(str(e))) from None
+_pickle.UnpicklingError: Weights only load failed. This file can still be loaded, to do so you have two options, [1mdo those steps only if you trust the source of the checkpoint[0m. 
+	(1) Re-running `torch.load` with `weights_only` set to `False` will likely succeed, but it can result in arbitrary code execution. Do it only if you got the file from a trusted source.
+	(2) Alternatively, to load with `weights_only=True` please check the recommended steps in the following error message.
+	WeightsUnpickler error: Unsupported global: GLOBAL numpy.core.multiarray.scalar was not an allowed global by default. Please use `torch.serialization.add_safe_globals([scalar])` to allowlist this global if you trust this class/function.
+
+Check the documentation of torch.load to learn more about types accepted by default with weights_only https://pytorch.org/docs/stable/generated/torch.load.html.

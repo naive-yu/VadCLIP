@@ -1,2 +1,5 @@
 /change_route.py
 __pycache__/
+/model/checkpoint.pth
+/model/model_ucf.pth
+/model/model_cur.pth
