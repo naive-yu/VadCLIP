@@ -75,10 +75,10 @@ def test(model, testdataloader, maxlen, prompt_text, gt, gtsegments, gtlabels, d
     dmap, iou = dmAP(element_logits2_stack, gtsegments, gtlabels, excludeNormal=False)
     averageMAP = 0
     for i in range(5):
-        print('mAP@{0:.1f} ={1:.2f}%'.format(iou[i], dmap[i]))
+        print(' mAP@{0:.1f} ={1:.2f}%'.format(iou[i], dmap[i]), end='')
         averageMAP += dmap[i]
     averageMAP = averageMAP / (i + 1)
-    print('average MAP: {:.2f}'.format(averageMAP))
+    print('\naverage MAP: {:.2f}'.format(averageMAP))
 
     return ROC1, AP1
 
