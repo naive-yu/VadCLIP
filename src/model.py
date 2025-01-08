@@ -56,6 +56,58 @@ class Transformer(nn.Module):
         return self.resblocks(x)
 
 
+class SwinTransformerLayerWithMask(nn.Module):
+    def __init__(self, embed_dim, window_size, shift_size, num_heads):
+        super().__init__()
+        self.window_size = window_size
+        self.shift_size = shift_size
+        self.embed_dim = embed_dim
+        self.num_heads = num_heads
+
+        self.norm1 = nn.LayerNorm(embed_dim)
+        self.attn = nn.MultiheadAttention(embed_dim, num_heads, batch_first=True)
+        self.norm2 = nn.LayerNorm(embed_dim)
+        self.mlp = nn.Sequential(
+            nn.Linear(embed_dim, embed_dim * 4),
+            QuickGELU(),
+            nn.Linear(embed_dim * 4, embed_dim)
+        )
+
+    def forward(self, x, padding_mask, lengths):
+        batch_size, seq_len, embed_dim = x.shape
+        padding_mask = padding_mask.to(dtype=bool, device=x.device) if padding_mask is not None else None
+        x = self.norm1(x)
+        if self.shift_size > 0:
+            rolled_x = []
+            for i in range(batch_size):
+                valid_len = lengths[i] 
+                valid_x = torch.roll(x[i, :valid_len, :], shifts=-self.shift_size, dims=1)
+                rolled_x.append(torch.cat([valid_x, x[i, valid_len:, :]], dim=0))
+            # padding_mask = torch.roll(padding_mask, shifts=-self.shift_size, dims=1)
+            x = torch.stack(rolled_x, dim=0)
+
+        seq_len = x.size(1)
+        num_windows = seq_len // self.window_size
+        windows = x.view(batch_size, num_windows, self.window_size, embed_dim).reshape(-1, self.window_size, embed_dim)
+        window_masks = padding_mask.view(batch_size, num_windows, self.window_size).reshape(-1, self.window_size)
+
+        attn_windows, _ = self.attn(windows, windows, windows, need_weights=False, key_padding_mask=window_masks, )
+
+        attn_x = attn_windows.view(batch_size, num_windows, self.window_size, embed_dim).reshape(batch_size, seq_len, embed_dim)
+        if self.shift_size > 0:
+            # attn_x = torch.roll(attn_x, shifts=self.shift_size, dims=1)
+            rolled_x = []
+            for i in range(batch_size):
+                valid_len = lengths[i]
+                valid_x = torch.roll(x[i, :valid_len, :], shifts=self.shift_size, dims=1)
+                rolled_x.append(torch.cat([valid_x, x[i, valid_len:, :]], dim=0))
+            x = torch.stack(rolled_x, dim=0)
+
+        x = x + attn_x
+        # x = x + self.dropout(attn_x + relative_bias)
+        x = x + self.mlp(self.norm2(x))
+        return x
+
 class CLIPVAD(nn.Module):
     def __init__(self,
                  num_class: int,
@@ -86,6 +138,45 @@ class CLIPVAD(nn.Module):
             attn_mask=self.build_attention_mask(self.attn_window)
         )
 
+        # # print(self.temporal)
+        # self.temporal2 = Transformer(
+        #     width=visual_width,
+        #     layers=visual_layers // 2,
+        #     heads=visual_head,
+        #     attn_mask=self.build_attention_mask(self.attn_window)
+        # )
+
+        # self.window_size = 8
+
+        # self.swinTransFormer = SwinTransformerLayerWithMask(
+        #     embed_dim=visual_width,
+        #     window_size=self.window_size,
+        #     shift_size=0,
+        #     num_heads=visual_head
+        # )
+        
+        # self.swinTransFormer2 = SwinTransformerLayerWithMask(
+        #     embed_dim=visual_width,
+        #     window_size=self.window_size,
+        #     shift_size=0,
+        #     num_heads=visual_head
+        # )
+
+        # self.swinTransFormer3 = SwinTransformerLayerWithMask(
+        #     embed_dim=visual_width,
+        #     window_size=self.window_size,
+        #     shift_size=0,
+        #     num_heads=visual_head
+        # )
+
+        # self.swinTransFormer4 = SwinTransformerLayerWithMask(
+        #     embed_dim=visual_width,
+        #     window_size=self.window_size,
+        #     shift_size=self.window_size // 2,
+        #     num_heads=visual_head
+        # )
+
+        # print(self.build_attention_mask(self.attn_window))
         width = int(visual_width / 2)
         self.gc1 = GraphConvolution(visual_width, width, residual=True)
         self.gc2 = GraphConvolution(width, width, residual=True)
@@ -166,7 +257,18 @@ class CLIPVAD(nn.Module):
         images = images.permute(1, 0, 2) + frame_position_embeddings
 
         x, _ = self.temporal((images, padding_mask))
-        x = x.permute(1, 0, 2)
+        # print(padding_mask.shape)
+
+        # x = self.swinTransFormer(x, padding_mask, lengths)
+        # x = self.swinTransFormer2(x, padding_mask, lengths)
+
+        x = images.permute(1, 0, 2).contiguous()
+
+        # x = self.swinTransFormer(x, padding_mask, lengths)
+        # x = self.swinTransFormer2(x, padding_mask, lengths)
+
+        # x = self.swinTransFormer3(x, padding_mask, lengths)  # 仅第二组使用
+        # x = self.swinTransFormer4(x, padding_mask, lengths)
 
         adj = self.adj4(x, lengths)
         disadj = self.disAdj(x.shape[0], x.shape[1])
